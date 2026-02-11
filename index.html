@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seni Seviyorum!</title>
+    <!-- Retro piksel fontu yüklüyoruz -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pixel-red: #8B0000;
+            --pixel-bg: #e6f2ff; /* Görseldeki hafif mavi kağıt tonu */
+            --btn-grey: #c0c0c0;
+            --btn-shadow: #404040;
+        }
+
+        body {
+            background-color: var(--pixel-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+            /* Kağıt dokusu efekti tüm ekrana */
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+        }
+
+        /* İçerik Taşıyıcı */
+        .content-wrapper {
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            padding: 20px;
+        }
+
+        /* Kalpler */
+        .hearts {
+            color: var(--pixel-red);
+            font-size: 30px; 
+            letter-spacing: 10px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+
+        /* Ana Başlık */
+        h1 {
+            color: var(--pixel-red);
+            font-size: 32px; /* Metin uzadığı için boyutu küçülttüm */
+            margin: 10px 0 40px 0;
+            /* text-transform: uppercase; - Kaldırdım ki küçük harfler görünsün */
+            line-height: 1.6; /* Satır aralığını açtım */
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+        }
+
+        /* Alt Metin */
+        p {
+            color: #cc4444; 
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 60px;
+            color: var(--pixel-red);
+        }
+
+        /* Buton Alanı */
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            position: relative;
+            height: 80px;
+        }
+
+        button {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 18px;
+            padding: 20px 50px;
+            background-color: var(--btn-grey);
+            border: 4px solid #000;
+            box-shadow: 
+                inset 3px 3px 0px #fff,
+                inset -3px -3px 0px var(--btn-shadow),
+                4px 4px 0px rgba(0,0,0,0.2);
+            cursor: pointer;
+            color: #000;
+            transition: transform 0.1s;
+        }
+
+        button:active {
+            box-shadow: 
+                inset 3px 3px 0px var(--btn-shadow),
+                inset -3px -3px 0px #fff;
+            transform: translateY(3px);
+        }
+
+        /* Yağan Kalpler Animasyonu */
+        .falling-heart {
+            position: fixed;
+            top: -10%;
+            user-select: none;
+            pointer-events: none;
+            z-index: 1; /* Yazıların arkasına düşsün */
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Yıldız Süslemeleri - Köşelere sabitledim */
+        .star {
+            position: fixed; 
+            color: var(--pixel-red);
+            font-size: 30px;
+            animation: twinkle 2s infinite ease-in-out;
+            pointer-events: none; 
+            z-index: 5;
+        }
+
+        .star-1 { top: 5%; left: 5%; font-size: 40px; }
+        .star-2 { top: 15%; left: 10%; font-size: 25px; animation-delay: 0.5s; }
+        .star-3 { bottom: 10%; left: 5%; font-size: 45px; animation-delay: 1s; }
+        .star-4 { top: 10%; right: 5%; font-size: 30px; animation-delay: 0.3s; }
+        .star-5 { bottom: 15%; right: 8%; font-size: 35px; animation-delay: 0.7s; }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.9); }
+        }
+
+        /* Gizli Mesaj - GÜNCELLENEN KISIM */
+        #hidden-message {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(139, 0, 0, 0.95); /* Kırmızı arka plan */
+            z-index: 100;
+            color: #fff;
+            flex-direction: column;
+            justify-content: flex-start; /* İçeriği yukarıdan başlat */
+            align-items: center;
+            text-align: center;
+            padding: 50px 20px; /* Kenar boşlukları */
+            box-sizing: border-box;
+            overflow-y: auto; /* Dikey kaydırmayı açtık! */
+        }
+
+        .note-text {
+            font-size: 14px;
+            line-height: 1.8;
+            max-width: 800px;
+            margin-top: 20px;
+            padding: 0 20px;
+            color: #ffffff !important; 
+        }
+        
+        /* Play Again butonu için özel stil */
+        .restart-btn {
+            margin-top: 40px;
+            margin-bottom: 40px; /* Altta boşluk bırakalım ki kaydırınca görünsün */
+            background-color: #fff !important;
+            color: #8B0000 !important;
+            border-color: #fff !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Süslemeler -->
+    <div class="star star-1">✦</div>
+    <div class="star star-2">✦</div>
+    <div class="star star-3">✦</div>
+    <div class="star star-4">✦</div>
+    <div class="star star-5">✦</div>
+
+    <div class="content-wrapper">
+        <div class="hearts">
+            &hearts; &hearts; &hearts; &hearts; &hearts;
+        </div>
+
+        <h1>Seni Çok ama çok seviyorum<br>DÜŞMÜŞ MELEĞİM</h1>
+
+        <p>
+            HAYATIMIN GERİ KALANINDA<br>
+            2. OYUNCUM OLUR MUSUN?
+        </p>
+
+        <div class="buttons">
+            <button onclick="showSurprise()">Evet</button>
+            <button id="noBtn" onmouseover="moveButton()" onclick="moveButton()">Hayır</button>
+        </div>
+    </div>
+
+    <!-- Sürpriz Ekranı -->
+    <div id="hidden-message">
+        <div style="font-size: 60px; margin-bottom: 20px;">🎉💖🎉</div>
+        <h2 style="font-size: 30px; line-height: 1.5; margin-bottom: 10px;">SONSUZA DEK...</h2>
+        
+        <p class="note-text">
+            Belki dünyanın en sosyal, en mükemmel insanı değilim... Bazen içime kapanıyorum, bazen hata yapmaktan ya da kaybetmekten çok korkuyorum.<br><br>
+            
+            Ama bildiğim tek bir şey var: Senin yanındayken o korkularım yok oluyor. Sen benim sığınağımsın.<br><br>
+            
+            Bu karmaşık ve zor oyunu tek başıma oynamak istemiyorum. Hayatın geri kalanında benim en güvenli alanım, en yakınım ve tek takım arkadaşım olur musun?
+        </p>
+        
+        <button class="restart-btn" onclick="location.reload()">Ana Sayfaya Dön</button>
+    </div>
+
+    <script>
+        // "No" butonu kaçma mekaniği
+        function moveButton() {
+            const btn = document.getElementById('noBtn');
+            const maxX = window.innerWidth - btn.offsetWidth - 50;
+            const maxY = window.innerHeight - btn.offsetHeight - 50;
+            const randomX = Math.random() * maxX;
+            const randomY = Math.random() * maxY;
+
+            btn.style.position = 'fixed';
+            btn.style.left = randomX + 'px';
+            btn.style.top = randomY + 'px';
+            
+            const colors = ['#ffcccc', '#ccffcc', '#ccccff', '#ffffcc'];
+            btn.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        let rainInterval;
+
+        // "Yes" butonu sürprizi
+        function showSurprise() {
+            document.getElementById('hidden-message').style.display = 'flex';
+            
+            // Kabul edildikten sonra kalp yağmurunu ÇILGINCA hızlandır
+            clearInterval(rainInterval);
+            setInterval(createHeart, 20); // Her 20ms'de bir kalp (kalp fırtınası)
+        }
+
+        // Kalp Yağmuru
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('falling-heart');
+            heart.innerHTML = '❤';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = Math.random() * 3 + 2 + 's'; // 2-5s arası düşüş hızı
+            heart.style.fontSize = Math.random() * 20 + 15 + 'px'; // Farklı boyutlar
+            
+            // Renk Varyasyonu: Koyu Kırmızı, Parlak Kırmızı, Pembe, Açık Pembe
+            const colors = ['#8B0000', '#FF0000', '#FF1493', '#FF69B4', '#FFC0CB'];
+            heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+
+            document.body.appendChild(heart);
+
+            // Ekrandan çıkınca temizle
+            setTimeout(() => {
+                heart.remove();
+            }, 5000);
+        }
+
+        // Yağmuru başlat (Başlangıçta daha yoğun: her 80ms'de bir)
+        rainInterval = setInterval(createHeart, 80);
+
+    </script>
+</body>
+</html>
